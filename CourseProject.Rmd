@@ -1,0 +1,93 @@
+---
+title: "Practical Machine Learning Course Project"
+author: "Saad Ul Islam"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. Load Required Libraries
+
+```{r}
+library(caret)
+library(randomForest)
+library(rpart)
+library(ggplot2)
+```
+
+## 2. Load and Preprocess the Data
+
+```{r}
+trainData <- read.csv("data/pml-training.csv", na.strings = c("NA", "", "#DIV/0!"))
+testData <- read.csv("data/pml-testing.csv", na.strings = c("NA", "", "#DIV/0!"))
+
+# Remove columns with mostly NAs
+trainData <- trainData[, colSums(is.na(trainData)) == 0]
+testData <- testData[, colSums(is.na(testData)) == 0]
+
+# Remove identifier columns
+trainData <- trainData[, -(1:7)]
+testData <- testData[, -(1:7)]
+```
+
+## 3. Partition the Data
+
+```{r}
+set.seed(12345)
+inTrain <- createDataPartition(trainData$classe, p = 0.7, list = FALSE)
+trainSet <- trainData[inTrain, ]
+valSet <- trainData[-inTrain, ]
+```
+
+## 4. Train the Model
+
+```{r}
+fitControl <- trainControl(method = "cv", number = 5)
+set.seed(12345)
+rfModel <- train(classe ~ ., data = trainSet, method = "rf", trControl = fitControl)
+```
+
+## 5. Evaluate on Validation Set
+
+```{r}
+valPred <- predict(rfModel, valSet)
+
+# Make sure both predicted and actual values have the same factor levels
+valPred <- factor(valPred, levels = union(levels(valPred), levels(valSet$classe)))
+valSet$classe <- factor(valSet$classe, levels = union(levels(valPred), levels(valSet$classe)))
+
+# 🔍 Optional: Diagnostic print to inspect factor levels
+print("Levels in valPred:")
+print(levels(valPred))
+
+print("Levels in valSet$classe:")
+print(levels(valSet$classe))
+
+# Compute confusion matrix
+confusionMatrix(valPred, valSet$classe)
+
+```
+
+## 6. Predict on Final Test Set
+
+```{r}
+finalPredictions <- predict(rfModel, testData)
+finalPredictions
+```
+
+## 7. Save 20 Predictions to Files
+
+```{r}
+dir.create("output", showWarnings = FALSE)
+
+pml_write_files = function(x){
+  for(i in 1:length(x)){
+    filename = paste0("output/problem_id_", i, ".txt")
+    write.table(x[i], file = filename, quote = FALSE, row.names = FALSE, col.names = FALSE)
+  }
+}
+
+pml_write_files(finalPredictions)
+```
