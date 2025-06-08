@@ -1,0 +1,19 @@
+---
+title: "Interactive Map with Leaflet"
+author: "Saad Ul Islam"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+
+```{r setup, include=FALSE}
+library(leaflet)
+```
+
+```{r map, echo=FALSE}
+leaflet() %>%
+  addProviderTiles("Esri.WorldImagery") %>%
+  addMarkers(lat = 34.0151, lng = 71.5249, popup = "Peshawar, Pakistan")
+```
