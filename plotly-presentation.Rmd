@@ -1,0 +1,24 @@
+---
+title: "Interactive Plotly Presentation"
+author: "Saad Ul Islam"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(plotly)
+```
+
+
+```{r plot, echo=FALSE }
+plot_ly(
+  data = mtcars,
+  x = ~wt,
+  y = ~mpg,
+  type = 'scatter',
+  mode = 'markers',
+  color = ~cyl,
+  text = ~paste("Model:", rownames(mtcars)),
+  marker = list(size = 10)
+)
+```
